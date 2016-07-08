@@ -1,36 +1,37 @@
+'''
+	@Author		Jaret Deprin
+	
+	@Info
+	Originally created keep a daily record of success / failures during automated
+	jobs.  This allows you to tally results over time and pushed results to a
+	notification services or through email.
+	
+	Ledger file is used as a poor mans flat file database
+	Ledger file is in json format & converted to a dictionary for writing
+	
+	Ledger keys are unix timestamps. top level keys are days with a 00:00:00 timestamp
+	Children keys are exact times when the script is executed.
+	
+	@Usage
+	Initialize the class:
+		import jarets_ledger
+		lm = jarets_ledger.LedgerManager(ledger_file='/path/to/file.json', ledger_history=int})
+			ledger_history: entries older then x days old will be removed. a value of 0 will never
+			remove old values.
+	Write any values to your ledger:
+		lm.runLedger['key_name'] = 'some value'
+	When complete, write out to your file:
+		lm.write_ledger_to_file()
+'''
+	
 import os, json, datetime
 
 class LedgerManager():
-	'''
-		@Author		Jaret Deprin
-		
-		@Info
-		Originally created keep a daily record of success / failures during automated
-		jobs.  This allows you to tally results over time and pushed results to a
-		notification services or through email.
-		
-		Ledger file is used as a poor mans flat file database
-		Ledger file is in json format & converted to a dictionary for writing
-		
-		Ledger keys are unix timestamps. top level keys are days with a 00:00:00 timestamp
-		Children keys are exact times when the script is executed.
-		
-		@Usage
-		Initialize the class:
-			import jarets_ledger
-			lm = jarets_ledger.LedgerManager(config={'LEDGER_FILE': '/path/to/file.json', 'LEDGER_HISTORY': int})
-				LEDGER_HISTORY: entries older then x days old will be removed. a value of 0 will never
-				remove old values.
-		Write any values to your ledger:
-			lm.runLedger['key_name'] = 'some value'
-		When complete, write out to your file:
-			lm.write_ledger_to_file()
-	'''
 	
-	def __init__(self, config):
+	def __init__(self, *args, **kwargs):
 		# Configs
-		self.__ledger_file = config['LEDGER_FILE']
-		self.__ledger_history = config['LEDGER_HISTORY']		
+		self.__ledger_file = kwargs.get('ledger_file')
+		self.__ledger_history = kwargs.get('ledger_history')		
 		
 		# Ledger
 		self.runLedger = {}

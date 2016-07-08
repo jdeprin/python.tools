@@ -1,6 +1,5 @@
 """
 	@Author		Jaret Deprin
-	@Date		07/07/16
 	
 	@Usage
 	import jarets_mysql_wrapper
@@ -80,7 +79,6 @@ class Mysql(object):
 		elif args:
 			values = args
 			query += " VALUES(" + ",".join(["%s"]*len(values)) + ")"
-		print query
 		self.__open()
 		self.__session.execute(query, values)
 		self.__connection.commit()
