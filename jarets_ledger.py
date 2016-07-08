@@ -19,14 +19,14 @@
 			ledger_history: entries older then x days old will be removed. A value of 0 or if the 
 			arguemnt is not defined will never remove old values.
 	Write any values to your ledger:
-		lm.runLedger['key_name'] = 'some value'
+		lm.write("key","value1","value2",['value4','value5']))
 	When complete, write out to your file:
 		lm.write_ledger_to_file()
 '''
 	
 import os, json, datetime
 
-class LedgerManager():
+class LedgerManager(object):
 	
 	def __init__(self, *args, **kwargs):
 		# Configs
@@ -34,7 +34,7 @@ class LedgerManager():
 		self.__ledger_history = kwargs.get('ledger_history')		
 		
 		# Ledger
-		self.runLedger = dict()
+		self.__runLedger = dict()
 		self.__fullLedger = dict()
 		self.__parentKey = str(self.set_unix_time(precise=False))
 		self.__runKey = str(self.set_unix_time(precise=True))
@@ -96,10 +96,17 @@ class LedgerManager():
 			error_msg = "Error writing ledger file: %s" % e
 			exit(error_msg)
 		return True
-
+	
 	def purge_old_ledger_keys(self):
 		oldunixdate = self.set_unix_time(precise=False, daysback=self.__ledger_history)
 		for key in self.__fullLedger:
 			if int(key) < oldunixdate:
 				del self.__fullLedger[key]
 		return True
+
+	def write(self, *args):
+		key = args[0]
+		value = args[1:]
+		self.__runLedger[key] = value
+		return True
+		
