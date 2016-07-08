@@ -34,13 +34,7 @@
 import MySQLdb, MySQLdb.cursors
 
 class Mysql(object):
-	__instance = None
-
-	__host = None
-	__user = None
-	__password = None
-	__database = None
-	
+	__instance = None	
 	__session = None
 	__connection = None
 	
@@ -53,10 +47,10 @@ class Mysql(object):
 	def __open(self):
 		try:
 			conn = MySQLdb.connect(host=self.__host,
-									user=self.__user,
-									passwd=self.__password,
-									db=self.__database,
-									cursorclass=MySQLdb.cursors.DictCursor)
+								user=self.__user,
+								passwd=self.__password,
+								db=self.__database,
+								cursorclass=MySQLdb.cursors.DictCursor)
 			self.__connection = conn
 			self.__session = conn.cursor()
 		except MySQLdb.Error, e:

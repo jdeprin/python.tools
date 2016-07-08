@@ -16,8 +16,8 @@
 	Initialize the class:
 		import jarets_ledger
 		lm = jarets_ledger.LedgerManager(ledger_file='/path/to/file.json', ledger_history=int})
-			ledger_history: entries older then x days old will be removed. a value of 0 will never
-			remove old values.
+			ledger_history: entries older then x days old will be removed. A value of 0 or if the 
+			arguemnt is not defined will never remove old values.
 	Write any values to your ledger:
 		lm.runLedger['key_name'] = 'some value'
 	When complete, write out to your file:
@@ -34,8 +34,8 @@ class LedgerManager():
 		self.__ledger_history = kwargs.get('ledger_history')		
 		
 		# Ledger
-		self.runLedger = {}
-		self.__fullLedger = {}
+		self.runLedger = dict()
+		self.__fullLedger = dict()
 		self.__parentKey = str(self.set_unix_time(precise=False))
 		self.__runKey = str(self.set_unix_time(precise=True))
 		
@@ -49,7 +49,7 @@ class LedgerManager():
 		try:
 			day = datetime.datetime.now() - datetime.timedelta(days=daysback)
 		except Exception as e:
-			error_msg = "Datetime variable was not int: %s" % e
+			error_msg = "Error creating datetime for dictionary keys: %s" % e
 			exit(error_msg)
 		if not precise:
 			day = datetime.datetime(day.year, day.month, day.day)
@@ -67,6 +67,9 @@ class LedgerManager():
 		except ValueError as e:
 			error_msg = "invalid json: %s" % e
 			exit(error_msg)
+		except Exception as e:
+			error_msg = "Error getting ledger file: %s" % e
+			exit(error_msg)
 
 	def _set_ledger_dict_key(self):
 		if not os.path.isfile(self.__ledger_file):
@@ -75,9 +78,9 @@ class LedgerManager():
 		self.__fullLedger = self._get_ledger_from_file(self.__ledger_file)
 
 		if self.__parentKey not in self.__fullLedger:
-			self.__fullLedger[self.__parentKey] = {}
+			self.__fullLedger[self.__parentKey] = dict()
 		
-		if self.__ledger_history != 0:
+		if (self.__ledger_history != 0) or (self.__ledger_history is not None):
 			self.purge_old_ledger_keys()
 		return True
 
@@ -88,6 +91,9 @@ class LedgerManager():
 				json.dump(self.__fullLedger, outfile)
 		except IOError as e:
 			error_msg = "Error creating ledger file.  Check folder permissions. Exiting. %s" % e
+			exit(error_msg)
+		except Exception as e:
+			error_msg = "Error writing ledger file: %s" % e
 			exit(error_msg)
 		return True
 
