@@ -79,7 +79,7 @@ class Mysql(object):
 			values = args
 			query += " VALUES(" + ",".join(["%s"]*len(values)) + ")"
 		if self.__stage is True:
-			print query % (values,)
+			print query % tuple(values)
 			return True
 		self.__open()
 		self.__session.execute(query, values)
@@ -106,7 +106,7 @@ class Mysql(object):
 		update_list = ["" + key + "=%s" for key in kwargs.iterkeys()]
 		query = "UPDATE " + table + " SET " + ",".join(update_list) + " WHERE " + where
 		if self.__stage is True:
-			print query % (values,)
+			print query % tuple(values)
 			return True
 		self.__open()
 		self.__session.execute(query, values)
@@ -130,7 +130,4 @@ class Mysql(object):
 		self.__connection.commit()
 		result_sp = self.__session.fetchall()
 		self.__close()
-		return result_sp
-		
-	def stage_query(self, query, values)
-		
+		return result_sp	
