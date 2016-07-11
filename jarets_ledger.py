@@ -43,7 +43,7 @@ class LedgerManager(object):
 		self._set_ledger_dict_key()
 	
 	@staticmethod
-	def set_unix_time(precise=True, daysback=0):
+	def _set_unix_time(precise=True, daysback=0):
 		if not isinstance(daysback, int):
 			raise ValueError('Invalid number of days specified: %s' % daysback)
 		try:
@@ -99,7 +99,6 @@ class LedgerManager(object):
 	
 	def purge_old_ledger_keys(self):
 		oldunixdate = set_unix_time(precise=False, daysback=self.ledger_history)
-		logging.debug('Purging old entries from ledger file.')
 		temp = dict(self.fullLedger)
 		for key in self.fullLedger:
 			if int(key) < oldunixdate:
