@@ -98,10 +98,13 @@ class LedgerManager(object):
 		return True
 	
 	def purge_old_ledger_keys(self):
-		oldunixdate = self.set_unix_time(precise=False, daysback=self.__ledger_history)
-		for key in self.__fullLedger:
+		oldunixdate = set_unix_time(precise=False, daysback=self.ledger_history)
+		logging.debug('Purging old entries from ledger file.')
+		temp = dict(self.fullLedger)
+		for key in self.fullLedger:
 			if int(key) < oldunixdate:
-				del self.__fullLedger[key]
+				del temp[key]
+		self.fullLedger = dict(temp)
 		return True
 
 	def write(self, *args):

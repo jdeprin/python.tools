@@ -6,6 +6,10 @@
 	# All parameters are required even if user/pass are empty
 	c = jarets_mysql_wrapper.Mysql(DBHOST="localhost", DBNAME="test", DBUSER="", DBPASS="")
 	
+	# Stage query
+	c.__stage = True
+	Will print queries / values but not execute them.
+	
 	# Select statment examples
 	results = c.select(table, columns, where(optional))
 	results = c.select("jdtest", "*")
@@ -39,10 +43,11 @@ class Mysql(object):
 	__connection = None
 	
 	def __init__(self, *args, **kwargs):
-		self.__host = kwargs.get('DBHOST')
-		self.__user = kwargs.get('DBUSER')
-		self.__password = kwargs.get('DBPASS')
-		self.__database = kwargs.get('DBNAME')
+		self.__host = kwargs.get('hostname')
+		self.__user = kwargs.get('user')
+		self.__password = kwargs.get('password')
+		self.__database = kwargs.get('database')
+		self.__stage = kwargs.get('stage')
 	
 	def __open(self):
 		try:
@@ -73,6 +78,9 @@ class Mysql(object):
 		elif args:
 			values = args
 			query += " VALUES(" + ",".join(["%s"]*len(values)) + ")"
+		if self.__stage is True:
+			print query % (values,)
+			return True
 		self.__open()
 		self.__session.execute(query, values)
 		self.__connection.commit()
@@ -97,6 +105,9 @@ class Mysql(object):
 		values = kwargs.values()
 		update_list = ["" + key + "=%s" for key in kwargs.iterkeys()]
 		query = "UPDATE " + table + " SET " + ",".join(update_list) + " WHERE " + where
+		if self.__stage is True:
+			print query % (values,)
+			return True
 		self.__open()
 		self.__session.execute(query, values)
 		self.__connection.commit()
@@ -104,6 +115,9 @@ class Mysql(object):
 		
 	def delete(self, table, where):
 		query = "DELETE FROM %s WHERE %s" % (table, where)
+		if self.__stage is True:
+			print query
+			return True
 		self.__open()
 		self.__session.execute(query)
 		self.__connection.commit()
@@ -117,3 +131,6 @@ class Mysql(object):
 		result_sp = self.__session.fetchall()
 		self.__close()
 		return result_sp
+		
+	def stage_query(self, query, values)
+		
