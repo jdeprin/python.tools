@@ -79,7 +79,7 @@ class Mysql(object):
 			values = args
 			query += " VALUES(" + ",".join(["%s"]*len(values)) + ")"
 		if self.__stage is True:
-			print query % tuple(values)
+			print query % values
 			return True
 		self.__open()
 		self.__session.execute(query, values)
