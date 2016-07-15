@@ -35,7 +35,8 @@
 	
 """
 
-import MySQLdb, MySQLdb.cursors
+import MySQLdb
+import MySQLdb.cursors
 
 class Mysql(object):
 	__instance = None	
@@ -79,10 +80,14 @@ class Mysql(object):
 			values = args
 			query += " VALUES(" + ",".join(["%s"]*len(values)) + ")"
 		if self.__stage is True:
-			print query % values
+			print query % tuple(values)
 			return True
 		self.__open()
-		self.__session.execute(query, values)
+		try:
+			self.__session.execute(query, values)
+		except MySQLdb.Error, e:
+			print "MySQL Error Closing [%d]: %s" % (e.args[0], e.args[1])
+			print query % tuple(values)
 		self.__connection.commit()
 		self.__close()
 		return self.__session.lastrowid
@@ -109,7 +114,11 @@ class Mysql(object):
 			print query % tuple(values)
 			return True
 		self.__open()
-		self.__session.execute(query, values)
+		try:
+			self.__session.execute(query, values)
+		except MySQLdb.Error, e:
+			print "MySQL Error Closing [%d]: %s" % (e.args[0], e.args[1])
+			print query % tuple(values)
 		self.__connection.commit()
 		self.__close()
 		
@@ -119,7 +128,11 @@ class Mysql(object):
 			print query
 			return True
 		self.__open()
-		self.__session.execute(query)
+		try:
+			self.__session.execute(query)
+		except MySQLdb.Error, e:
+			print "MySQL Error Closing [%d]: %s" % (e.args[0], e.args[1])
+			print query
 		self.__connection.commit()
 		self.__close()
 		
