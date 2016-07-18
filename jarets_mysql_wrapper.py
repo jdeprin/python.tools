@@ -48,9 +48,9 @@ class Mysql(object):
 		self.__user = kwargs.get('user')
 		self.__password = kwargs.get('password')
 		self.__database = kwargs.get('database')
-		self.__stage = kwargs.get('stage')
+		self.__stage = kwargs.get('stage', False)
 
-		self._mysql_conf_char = kwargs.get("encoding", "utf8")
+		self._mysql_conf_char = kwargs.get("encoding", "latin1")
 	
 	def __open(self):
 		try:
@@ -62,15 +62,15 @@ class Mysql(object):
 								charset=self._mysql_conf_char)
 			self.__connection = conn
 			self.__session = conn.cursor()
-		except MySQLdb.Error, e:
-			print "MySQL Connection Error [%d]: %s" % (e.args[0], e.args[1])
+		except MySQLdb.Error as e:
+			print("MySQL Connection Error [%d]: %s" % (e.args[0], e.args[1]))
 
 	def __close(self):
 		try:
 			self.__session.close()
 			self.__connection.close()
-		except MySQLdb.Error, e:
-			print "MySQL Error Closing [%d]: %s" % (e.args[0], e.args[1])
+		except MySQLdb.Error as e:
+			print("MySQL Error Closing [%d]: %s" % (e.args[0], e.args[1]))
 
 	def insert(self, table, *args, **kwargs):
 		values = None
@@ -83,14 +83,14 @@ class Mysql(object):
 			values = args
 			query += " VALUES(" + ",".join(["%s"]*len(values)) + ")"
 		if self.__stage is True:
-			print query % tuple(values)
+			print(query % tuple(values))
 			return True
 		self.__open()
 		try:
 			self.__session.execute(query, values)
-		except MySQLdb.Error, e:
-			print "MySQL Error Closing [%d]: %s" % (e.args[0], e.args[1])
-			print query % tuple(values)
+		except MySQLdb.Error as e:
+			print("MySQL Error Closing [%d]: %s" % (e.args[0], e.args[1]))
+			print(query % tuple(values))
 		self.__connection.commit()
 		self.__close()
 		return self.__session.lastrowid
@@ -109,33 +109,32 @@ class Mysql(object):
 		return result
 		
 	def update(self, table, where, **kwargs):
-		values = None
 		values = kwargs.values()
-		update_list = ["" + key + "=%s" for key in kwargs.iterkeys()]
+		update_list = ["" + key + "=%s" for key in kwargs.keys()]
 		query = "UPDATE " + table + " SET " + ",".join(update_list) + " WHERE " + where
 		if self.__stage is True:
-			print query % tuple(values)
+			print(query % tuple(values))
 			return True
 		self.__open()
 		try:
 			self.__session.execute(query, values)
-		except MySQLdb.Error, e:
-			print "MySQL Error Closing [%d]: %s" % (e.args[0], e.args[1])
-			print query % tuple(values)
+		except MySQLdb.Error as e:
+			print("MySQL Error Closing [%d]: %s" % (e.args[0], e.args[1]))
+			print(query % tuple(values))
 		self.__connection.commit()
 		self.__close()
 		
 	def delete(self, table, where):
 		query = "DELETE FROM %s WHERE %s" % (table, where)
 		if self.__stage is True:
-			print query
+			print(query)
 			return True
 		self.__open()
 		try:
 			self.__session.execute(query)
-		except MySQLdb.Error, e:
-			print "MySQL Error Closing [%d]: %s" % (e.args[0], e.args[1])
-			print query
+		except MySQLdb.Error as e:
+			print("MySQL Error Closing [%d]: %s" % (e.args[0], e.args[1]))
+			print(query)
 		self.__connection.commit()
 		self.__close()
 		
