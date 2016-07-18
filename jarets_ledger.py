@@ -1,30 +1,40 @@
-'''
-	@Author		Jaret Deprin
+"""
+@Author		Jaret Deprin
+
+@Info
+Originally created keep a daily record of success / failures during automated
+jobs.  This allows you to tally results over time and pushed results to a
+notification services or through email.
+
+Ledger file is used as a poor mans flat file database
+Ledger file is in json format & converted to a dictionary for writing
+
+Ledger keys are unix timestamps. top level keys are days with a 00:00:00 timestamp
+Children keys are exact times when the script is executed.
+
+@Usage
+Initialize the class:
+	import jarets_ledger
+	lm = jarets_ledger.LedgerManager(ledger_file='/path/to/file.json', ledger_history=int})
+		ledger_history: entries older then x days old will be removed. A value of 0 or if the
+		arguemnt is not defined will never remove old values.
+Write any values to your ledger:
+	lm.write("key","value1","value2",['value4','value5']))
+	if you only include a single item, a flat key = value is returned.  If multiple values are included
+	a tuple of values is returned.
+	eg:
+		lm.write("my_key", {1:"foo", 2:"bar"})
+		= {'my_key': {1: 'foo', 2: 'bar'}}
+		lm.write("my_key","value1","value2",['value4','value5'])
+		= {'my_key': ('value1', 'value2', ['value4', 'value5'])}
+When complete, write out to your file:
+	lm.write_ledger_to_file()
+"""
 	
-	@Info
-	Originally created keep a daily record of success / failures during automated
-	jobs.  This allows you to tally results over time and pushed results to a
-	notification services or through email.
-	
-	Ledger file is used as a poor mans flat file database
-	Ledger file is in json format & converted to a dictionary for writing
-	
-	Ledger keys are unix timestamps. top level keys are days with a 00:00:00 timestamp
-	Children keys are exact times when the script is executed.
-	
-	@Usage
-	Initialize the class:
-		import jarets_ledger
-		lm = jarets_ledger.LedgerManager(ledger_file='/path/to/file.json', ledger_history=int})
-			ledger_history: entries older then x days old will be removed. A value of 0 or if the 
-			arguemnt is not defined will never remove old values.
-	Write any values to your ledger:
-		lm.write("key","value1","value2",['value4','value5']))
-	When complete, write out to your file:
-		lm.write_ledger_to_file()
-'''
-	
-import os, json, datetime
+import os
+import json
+import datetime
+import time
 
 class LedgerManager(object):
 	
@@ -36,8 +46,8 @@ class LedgerManager(object):
 		# Ledger
 		self.__runLedger = dict()
 		self.__fullLedger = dict()
-		self.__parentKey = str(self.set_unix_time(precise=False))
-		self.__runKey = str(self.set_unix_time(precise=True))
+		self.__parentKey = str(self._set_unix_time(precise=False))
+		self.__runKey = str(self._set_unix_time(precise=True))
 		
 		# Prep ledger file
 		self._set_ledger_dict_key()
@@ -72,7 +82,9 @@ class LedgerManager(object):
 			exit(error_msg)
 
 	def _set_ledger_dict_key(self):
+		# No ledger file
 		if not os.path.isfile(self.__ledger_file):
+			self.__fullLedger[self.__parentKey] = dict()
 			self.write_ledger_to_file()
 
 		self.__fullLedger = self._get_ledger_from_file(self.__ledger_file)
@@ -98,17 +110,18 @@ class LedgerManager(object):
 		return True
 	
 	def purge_old_ledger_keys(self):
-		oldunixdate = set_unix_time(precise=False, daysback=self.ledger_history)
-		temp = dict(self.fullLedger)
-		for key in self.fullLedger:
+		oldunixdate = self._set_unix_time(precise=False, daysback=self.__ledger_history)
+		temp = dict(self.__fullLedger)
+		for key in self.__fullLedger:
 			if int(key) < oldunixdate:
 				del temp[key]
-		self.fullLedger = dict(temp)
+		self.__fullLedger = dict(temp)
 		return True
 
 	def write(self, *args):
 		key = args[0]
 		value = args[1:]
+		if len(value) == 1:
+			(value,) = value
 		self.__runLedger[key] = value
 		return True
-		

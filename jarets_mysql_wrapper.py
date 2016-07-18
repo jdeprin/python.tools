@@ -49,6 +49,8 @@ class Mysql(object):
 		self.__password = kwargs.get('password')
 		self.__database = kwargs.get('database')
 		self.__stage = kwargs.get('stage')
+
+		self._mysql_conf_char = kwargs.get("encoding", "utf8")
 	
 	def __open(self):
 		try:
@@ -56,7 +58,8 @@ class Mysql(object):
 								user=self.__user,
 								passwd=self.__password,
 								db=self.__database,
-								cursorclass=MySQLdb.cursors.DictCursor)
+								cursorclass=MySQLdb.cursors.DictCursor,
+								charset=self._mysql_conf_char)
 			self.__connection = conn
 			self.__session = conn.cursor()
 		except MySQLdb.Error, e:
