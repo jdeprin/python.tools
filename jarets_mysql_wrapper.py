@@ -62,6 +62,7 @@ class Mysql(object):
 								charset=self._mysql_conf_char)
 			self.__connection = conn
 			self.__session = conn.cursor()
+			#self.__connection.autocommit = True
 		except MySQLdb.Error as e:
 			print("MySQL Connection Error [%d]: %s" % (e.args[0], e.args[1]))
 
@@ -91,9 +92,11 @@ class Mysql(object):
 		except MySQLdb.Error as e:
 			print("MySQL Error Closing [%d]: %s" % (e.args[0], e.args[1]))
 			print(query % tuple(values))
+			self.__connection.rollback()
+		last_row = self.__session.lastrowid
 		self.__connection.commit()
 		self.__close()
-		return self.__session.lastrowid
+		return last_row
 			
 	def select(self, table, *args, **kwargs):
 		result = None
@@ -103,8 +106,8 @@ class Mysql(object):
 			query += " WHERE %s" % kwargs['where']
 		self.__open()
 		self.__session.execute(query)
-		self.__connection.commit()
 		result = self.__session.fetchall()
+		self.__connection.commit()
 		self.__close()
 		return result
 		
@@ -121,6 +124,7 @@ class Mysql(object):
 		except MySQLdb.Error as e:
 			print("MySQL Error Closing [%d]: %s" % (e.args[0], e.args[1]))
 			print(query % tuple(values))
+			self.__connection.rollback()
 		self.__connection.commit()
 		self.__close()
 		
@@ -135,6 +139,7 @@ class Mysql(object):
 		except MySQLdb.Error as e:
 			print("MySQL Error Closing [%d]: %s" % (e.args[0], e.args[1]))
 			print(query)
+			self.__connection.rollback()
 		self.__connection.commit()
 		self.__close()
 		
